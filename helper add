@@ -107,25 +107,25 @@ class AVL(BST):
         
         self.add_helper(n, value)
 
-        # Assign n's parent pointer
-        n.parent = p
-
-        # Rebalance
-        while p is not None:
-            self.rebalance(p)
-            p = p.parent
-
 
     def add_helper(self, root, value):
         if not root:
             return AVLNode(value)
         elif value < root.value:
             root.left = self.add_helper(root.left, value)
+            root.left = left_root
+            left_root.parent = root
         else:
             root.right = self.add_helper(root.right, value)
+            root.right = right_root
+            right_root.parent = root
 
         # Set root height
         root.height = 1 + max(self.get_height(root.left), self.get_height(root.right))
+        
+        # Rebalance
+        return rebalance(value)
+        
 
     def remove(self, value: object) -> bool:
         """
@@ -147,8 +147,7 @@ class AVL(BST):
         """
         if not n:
             return 0
-        output = self.get_height(n.right) - self.get_height(n.left)
-        return output
+        return self.get_height(n.right) - self.get_height(n.left)
 
     def update_height(self, n):
         """
@@ -175,9 +174,7 @@ class AVL(BST):
         c.left = n
         n.parent = c
         self.update_height(n)
-        print("updated height of n to:", self.get_height(n))
         self.update_height(c)
-        print("updated height of c to:", self.get_height(c))
         return c
 
     def rotate_right(self, n):
@@ -191,33 +188,33 @@ class AVL(BST):
         c.right = n
         n.parent = c
         self.update_height(n)
-        print("updated height to:", self.get_height(n))
         self.update_height(c)
-        print("updated height to:", self.get_height(c))
         return c
 
     def rebalance(self, n):
         """
         Implements rotations if balance is required
         """
-        # Root is unbalanced to the left
-        if self.balance_factor(n) < -1:
-            # L-R
-            if self.balance_factor(n.left) > 0:
-                print("L-R")
-                self.rotate_left(n.left)
-                n.left.parent = n
-            print("L-L")
-        # Root is unbalanced to the right
-        elif self.balance_factor(n) > 1:
+        bf = self.balance_factor(n)
+        
+        # L-R
+        if bf < -1 or bf > 1
+            if bf < -1:
+                n.left = self.rotate_left(n.left)
+                return self.rotate_right(n)
+            # L-L
+            else:
+                return self.rotate_right(n)
             # R-L
-            if self.balance_factor(n.right) < 0:
-                print("R-L")
-                self.rotate_right(n.right)
-                n.right.parent = n
-            self.rotate_left(n)
+            if bf > 1:
+                n.right = self.rotate_right(n.right)
+                return self.rotate_left(n)
+            # R-R
+            else:
+                return self.rotate_left(n)
         else:
-            self.update_height(n)
+            return n
+        
 
     # ------------------------------------------------------------------ #
 
