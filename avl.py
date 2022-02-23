@@ -16,6 +16,7 @@ class AVLNode(BSTNode):
     AVL Tree Node class. Inherits from BSTNode
     DO NOT CHANGE THIS CLASS IN ANY WAY
     """
+
     def __init__(self, value: object) -> None:
         """
         Initialize a new AVL node
@@ -41,6 +42,7 @@ class AVL(BST):
     AVL Tree class. Inherits from BST
     DO NOT CHANGE THIS CLASS IN ANY WAY
     """
+
     def __init__(self, start_tree=None) -> None:
         """
         Initialize a new AVL Tree
@@ -99,36 +101,40 @@ class AVL(BST):
 
     # ------------------------------------------------------------------ #
 
-    def add(self, value: object) -> None:
+    def add(self, value: object):
         """
         Adds a new node with given value in the tree and auto balances
         """
-        p = None
         n = self.root
-        # If adding first node
-        if self.is_empty():
+
+        if n is None:
             self.root = AVLNode(value)
-            self.root.height += 1
-            return
-        # Find spot of insert and then create node
-        while n is not None:
-            p = n
-            if value < n.value:
-                n = n.left
-            else:
-                n = n.right
-        if value < p.value:
-            p.left = AVLNode(value)
-            n = p.left
+            return self.root
+
+        self.add_helper(n, value)
+
+    def add_helper(self, root, value):
+        """
+        helper method to add nodes
+        """
+        if not root:
+            new_n = AVLNode(value)
+            new_n.height = 1
+            return new_n
+        elif value < root.value:
+            root.left = self.add_helper(root.left, value)
+            left_root = root.left
+            left_root.parent = root
         else:
-            p.right = AVLNode(value)
-            n = p.right
-        # Assign n's parent pointer
-        n.parent = p
+            root.right = self.add_helper(root.right, value)
+            right_root = root.right
+            right_root.parent = root
+
+        # Set root height
+        root.height = 1 + max(self.get_height(root.left), self.get_height(root.right))
+
         # Rebalance
-        while p is not None:
-            self.rebalance(p)
-            p = p.parent
+        return self.rebalance(root)
 
     def remove(self, value: object) -> bool:
         """
@@ -150,8 +156,8 @@ class AVL(BST):
         """
         if not n:
             return 0
-        output = self.get_height(n.right) - self.get_height(n.left)
-        return output
+
+        return self.get_height(n.right) - self.get_height(n.left)
 
     def update_height(self, n):
         """
@@ -178,9 +184,7 @@ class AVL(BST):
         c.left = n
         n.parent = c
         self.update_height(n)
-        print("updated height of n to:", self.get_height(n))
         self.update_height(c)
-        print("updated height of c to:", self.get_height(c))
         return c
 
     def rotate_right(self, n):
@@ -194,34 +198,35 @@ class AVL(BST):
         c.right = n
         n.parent = c
         self.update_height(n)
-        print("updated height to:", self.get_height(n))
         self.update_height(c)
-        print("updated height to:", self.get_height(c))
         return c
 
     def rebalance(self, n):
         """
         Implements rotations if balance is required
         """
-        # Root is unbalanced to the left
-        if self.balance_factor(n) < -1:
-            # L-L
-            if self.balance_factor(n.left) <= 0:
-                return self.rotate_right(n)
-            # L-R
-            else:
+        bf = self.balance_factor(n)
+        if not n.parent:
+            return 0
+
+        # L-R
+        if bf < 0:
+            if self.balance_factor(n.left) > 0:
                 n.left = self.rotate_left(n.left)
                 return self.rotate_right(n)
-        # Root is unbalanced to the right
-        elif self.balance_factor(n) > 1:
-            # R-R
-            if self.balance_factor(n.right) >= 0:
-                return self.rotate_left(n)
-            # R-L
+            # L-L
             else:
+                return self.rotate_right(n)
+        elif bf > 0:
+            # R-L
+            if self.balance_factor(n.right) < 0:
                 n.right = self.rotate_right(n.right)
                 return self.rotate_left(n)
-        return n
+            # R-R
+            else:
+                return self.rotate_left(n)
+        else:
+            return n
 
     # ------------------------------------------------------------------ #
 
@@ -268,6 +273,7 @@ class AVL(BST):
         super().make_empty()
     '''
 
+
 # ------------------- BASIC TESTING -----------------------------------------
 
 
@@ -288,10 +294,10 @@ if __name__ == '__main__':
     print("\nPDF - method add() example 2")
     print("----------------------------")
     test_cases = (
-        (10, 20, 30, 40, 50),   # RR, RR
-        (10, 20, 30, 50, 40),   # RR, RL
-        (30, 20, 10, 5, 1),     # LL, LL
-        (30, 20, 10, 1, 5),     # LL, LR
+        (10, 20, 30, 40, 50),  # RR, RR
+        (10, 20, 30, 50, 40),  # RR, RL
+        (30, 20, 10, 5, 1),  # LL, LL
+        (30, 20, 10, 1, 5),  # LL, LR
         (5, 4, 6, 3, 7, 2, 8),  # LL, RR
         (range(0, 30, 3)),
         (range(0, 31, 3)),
